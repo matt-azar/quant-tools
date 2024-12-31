@@ -56,7 +56,7 @@ def calculate_apy(ttt, at_risk=None, to_win=100.0) -> float:
     """
     profit = to_win / at_risk
     rate = np.log(profit) / ttt
-    return rate*100
+    return rate * 100
 
 def get_1y_prices(ticker: str) -> pd.DataFrame:
     data = yf.download(ticker, period='1y', interval='1d', progress=False)
@@ -105,7 +105,7 @@ def blackscholes_P_above(
     if T:
         ttt = get_ttt(T)
     assert ttt > 0.0, "Time T has passed."
-    d1 = (np.log(S0/K) + (0.5*sigma**2 + r) * ttt) / (sigma * ttt**0.5)
+    d1 = (np.log(S0 / K) + (0.5 * sigma**2 + r) * ttt) / (sigma * ttt**0.5)
     d2 = d1 - sigma * ttt**0.5
     return norm.cdf(d2)
 
@@ -141,7 +141,7 @@ def bachelier_P_above(
     z = (mu - K) / (sigma * ttt**0.5)
     return norm.cdf(z)
 
-def P(K, ticker='^GSPC', sigma=price('^VIX')/100):
+def P(K, ticker='^GSPC', sigma=price('^VIX') / 100):
     return bachelier_P_above(S0=price(ticker), K=K, sigma=sigma, T=get_market_close())
 
 def print_P_above(S0, K, sigma, T=None, ttt=None, P_above=None) -> None:
@@ -152,8 +152,6 @@ def print_P_above(S0, K, sigma, T=None, ttt=None, P_above=None) -> None:
         ttt = get_ttt(T)
     assert ttt > 0.0, "Time T has passed."
     hours_remaining = 24 * 365 * ttt
-    if hours_remaining < 0:
-        raise Exception("Time T has already passed.")
     print(f"Datetime:\t {datetime.now(tz=timezone_et):%D %T} ET")
     print(f"Hours to T:\t {hours_remaining:.3f}")
     print()
