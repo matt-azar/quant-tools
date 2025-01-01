@@ -11,8 +11,7 @@ def cryptoprice(coin = "BTC") -> float:
     response = requests.get(url)
     tgt = "font-semibold tabular-nums md:text-2xl\">$"
     idx = response.text.find(tgt) + len(tgt)
-    if idx == -1:
-        raise Exception("Unable to parse price.")
+    assert idx != -1, "Unable to parse price."
     s = response.text[idx:idx+10]
     while len(s) and not s[-1].isdigit():
         s = s[:-1]
