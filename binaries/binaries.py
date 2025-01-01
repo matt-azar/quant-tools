@@ -24,20 +24,19 @@ def get_r(index: int = 2) -> float:
         r = df[series[index]].iloc[-1] / 100
         return r
     except:
-        if not r:
-            print("Unable to download risk-free rate.")
-        return r if r else 0.04
+        # print("Unable to download risk-free rate. Using default value.")
+        return 0.04
     
 risk_free_rate = get_r()
 
 def get_T(year, month, day, hour) -> datetime:
     return datetime(year, month, day, hour, tzinfo=timezone_et)
 
-def get_market_close() -> datetime:
+def get_market_close(h: int = 16) -> datetime:
     T = datetime.now(tz=timezone_et)
-    if T.hour >= 16:
+    if T.hour >= h:
         T = T.replace(day=T.day+1)
-    T = T.replace(hour=16, minute=0, second=0, microsecond=0)
+    T = T.replace(hour=h, minute=0, second=0, microsecond=0)
     return T
 
 def get_ttt(T: datetime = get_market_close()) -> float:
@@ -66,9 +65,31 @@ def get_1y_prices(ticker: str) -> pd.DataFrame:
     return daily_returns
 
 def price(ticker: str) -> float:
-    data = yf.download(ticker, period='1d', interval='1m', progress=False)
-    S0 = data[('Adj Close', ticker)].iloc[-1]
-    return S0
+    try:
+        data = yf.download(ticker, period='1d', interval='1m', progress=False)
+        S0 = data[('Adj Close', ticker)].iloc[-1]
+        return S0
+    except Exception:
+        # yf.download() generates error message automatically.
+        return 0.0
+
+def cryptoprice(coin = "BTC") -> float:
+    match coin:
+        case "BTC":
+            url = "https://www.cfbenchmarks.com/data/indices/BRTI"
+        case "ETH":
+            url = "https://www.cfbenchmarks.com/data/indices/ETHUSD_RTI"
+        case _:
+            print("Enter a valid coin.")
+            return 0.0
+    response = requests.get(url)
+    tgt = "font-semibold tabular-nums md:text-2xl\">$"
+    idx = response.text.find(tgt) + len(tgt)
+    s = response.text[idx:idx+10]
+    while len(s) and not s[-1].isdigit():
+        s = s[:-1]
+    s = s.replace(",", "")
+    return float(s)
 
 def calculate_historical_volatility(returns: pd.DataFrame) -> float:
     """
@@ -141,7 +162,7 @@ def bachelier_P_above(
     z = (mu - K) / (sigma * ttt**0.5)
     return norm.cdf(z)
 
-def P(K, ticker='^GSPC', sigma=price('^VIX') / 100):
+def P(K, ticker, sigma):
     return bachelier_P_above(S0=price(ticker), K=K, sigma=sigma, T=get_market_close())
 
 def print_P_above(S0, K, sigma, T=None, ttt=None, P_above=None) -> None:
@@ -240,8 +261,8 @@ def get_nyu_garch_vol(ticker='^GSPC') -> float:
     }
     
     if ticker not in tickers:
-        print(f"(GARCH Volatility) Ticker '{ticker}' not supported. Supported tickers are: {list(tickers.keys())}.")
-        return 0
+        # print(f"(GARCH Volatility) Ticker '{ticker}' not supported. Supported tickers are: {list(tickers.keys())}.")
+        return 0.0
     
     url = tickers[ticker]
     response = requests.get(url)
