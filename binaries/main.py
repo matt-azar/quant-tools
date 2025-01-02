@@ -3,7 +3,15 @@ from qftools import get_market_close, get_ttt, price, get_daily_volatility, get_
 from cryptotools import cryptoprice
 from datetime import datetime
 
-def main(ticker, K, abbrev=False, info_only=False, ttt=None, close=16):
+def main(
+    ticker    = "^GSPC",
+    K         = 0,
+    abbrev    = True,
+    info_only = False,
+    ttt       = None,
+    close     = 16,
+    print_ttt = False
+):
     if ttt is None:
         T = get_market_close(close)
         ttt = get_ttt(T)
@@ -43,9 +51,10 @@ def main(ticker, K, abbrev=False, info_only=False, ttt=None, close=16):
             print()
             print_P_above(S0, K, sigma, ttt=ttt, P_above=p_above)
     else:
-        print(f"Above: {p_above:.2%}\nBelow: {1-p_above:.2%}")
-        hours_remaining = 24 * 365 * ttt
-        print(f"Hours to T: {hours_remaining:.3f} ({close=})")
+        print(f"Above: {p_above:.2%}\nBelow: {1-p_above:.2%}") if K else None
+        if print_ttt:
+            hours_remaining = 24 * 365 * ttt
+            print(f"Hours to T: {hours_remaining:.3f} ({close=})")
 
 if __name__ == "__main__":
     ticker = input("Ticker (default = ^GSPC): ")
