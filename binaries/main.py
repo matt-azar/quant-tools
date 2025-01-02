@@ -8,8 +8,7 @@ def main(ticker, K, abbrev=False, info_only=False, ttt=None, close=16):
         T = get_market_close(close)
         ttt = get_ttt(T)
     S0 = price(ticker)
-    # vix = price('^VIX')
-    vix = 0.0 # to suppress yf messages if vix isn't loading
+    vix = price('^VIX')
     daily_vol = get_daily_volatility(ticker)
     historical_vol = daily_vol * 252**0.5
     garch_vol = get_nyu_garch_vol(ticker)
@@ -21,10 +20,10 @@ def main(ticker, K, abbrev=False, info_only=False, ttt=None, close=16):
             sigma = max(1.5 * vix / 100, garch_vol, historical_vol)
         case "BTC-USD":
             S0 = cryptoprice("BTC")
-            sigma = 1.00 * historical_vol
+            sigma = 1.02 * historical_vol
         case "ETH-USD":
             S0 = cryptoprice("ETH")
-            sigma = 1.00 * historical_vol
+            sigma = 1.02 * historical_vol
         case _:
             sigma = max(garch_vol, historical_vol)
         
@@ -44,13 +43,9 @@ def main(ticker, K, abbrev=False, info_only=False, ttt=None, close=16):
             print()
             print_P_above(S0, K, sigma, ttt=ttt, P_above=p_above)
     else:
-        print(f"Above: {p_above:.2%}, Below: {1-p_above:.2%}")
-        if close != 16:
-            hours_remaining = 24 * 365 * ttt
-            if hours_remaining < 1.0:
-                print(f"Minutes to T: {60 * hours_remaining:.3f}")
-            else:
-                print(f"Hours to T: {hours_remaining:.3f}")
+        print(f"Above: {p_above:.2%}\nBelow: {1-p_above:.2%}")
+        hours_remaining = 24 * 365 * ttt
+        print(f"Hours to T: {hours_remaining:.3f} ({close=})")
 
 if __name__ == "__main__":
     ticker = input("Ticker (default = ^GSPC): ")
