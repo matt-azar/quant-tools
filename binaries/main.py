@@ -1,5 +1,5 @@
-from binaries import bachelier_P_above, blackscholes_P_above, print_P_above
-from qftools import get_market_close, get_ttt, price, get_daily_volatility, get_nyu_garch_vol
+from binaries import above, print_P_above
+from qftools import get_market_close, get_tau, price, get_daily_volatility, get_nyu_garch_vol
 from cryptotools import cryptoprice
 from datetime import datetime
 
@@ -8,14 +8,15 @@ def main(
     K         = 0,
     abbrev    = True,
     info_only = False,
-    ttt       = None,
+    tau       = None,
     close     = 16,
-    print_ttt = False
+    print_tau = False,
+    S0        = None,
 ):
-    if ttt is None:
+    if tau is None:
         T = get_market_close(close)
-        ttt = get_ttt(T)
-    S0 = price(ticker)
+        tau = get_tau(T)
+    if S0 is None: S0 = price(ticker)
     vix = price('^VIX')
     daily_vol = get_daily_volatility(ticker)
     historical_vol = daily_vol * 252**0.5
@@ -35,12 +36,7 @@ def main(
         case _:
             sigma = max(garch_vol, historical_vol)
         
-    if ttt > 30 / 365:
-        print("Black-Scholes pricing model.\n") if not abbrev else None
-        p_above = blackscholes_P_above(S0, K, sigma, ttt=ttt)
-    else:
-        print("Bachelier pricing model.\n") if not abbrev else None
-        p_above = bachelier_P_above(S0, K, sigma, ttt=ttt)
+    p_above = above(S0, K, sigma, tau=tau)
     
     if info_only or not abbrev:
         print(f"Daily Vol:       {daily_vol:.3%}, (S0 +/- {S0*daily_vol:.2f})")
@@ -49,11 +45,11 @@ def main(
         print(f"VIX:             {vix:.2f}") if vix else None
         if not info_only:
             print()
-            print_P_above(S0, K, sigma, ttt=ttt, P_above=p_above)
+            print_P_above(S0, K, sigma, tau=tau, P_above=p_above)
     else:
         print(f"Above: {p_above:.2%}\nBelow: {1-p_above:.2%}") if K else None
-        if print_ttt:
-            hours_remaining = 24 * 365 * ttt
+        if print_tau:
+            hours_remaining = 24 * 365 * tau
             print(f"Hours to T: {hours_remaining:.3f} ({close=})")
 
 if __name__ == "__main__":
@@ -70,4 +66,4 @@ if __name__ == "__main__":
 
     print(f"\n{ticker} current price: {price(ticker):.2f} ({datetime.now():%D %T})\n")
     
-    main(ticker, K, abbrev, info_only)
+    main(ticker=ticker, K=K, abbrev=abbrev, info_only=info_only)

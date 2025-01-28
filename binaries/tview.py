@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print(f"{ticker} current price: {price(ticker):.2f} ({datetime.now():%D %T})\n")
         for k in K:
             print(f"K={k}")
-            main(ticker, k, print_ttt=False)
+            main(ticker, k, print_tau=False)
             print()
-        main(print_ttt=True)  
+        main(print_tau=True)  
         sleep(period)

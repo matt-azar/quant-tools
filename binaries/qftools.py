@@ -47,13 +47,13 @@ def get_market_close(h: int = 16) -> datetime:
     T = T.replace(hour=h, minute=0, second=0, microsecond=0)
     return T
 
-def get_ttt(T: datetime = get_market_close()) -> float:
+def get_tau(T: datetime = get_market_close()) -> float:
     """
     Calculate the time in years until time T.
     """
     t = datetime.now(tz=timezone_et)
-    time_delta = T - t
-    years = time_delta.total_seconds() / (365 * 24 * 60 * 60)
+    tau = T - t
+    years = tau.total_seconds() / (365 * 24 * 60 * 60)
     assert years > 0.0, "Time T has passed."
     return years
   
@@ -72,12 +72,12 @@ def get_1y_prices(ticker: str) -> pd.DataFrame:
     daily_returns = adj_close_prices.pct_change().dropna()
     return daily_returns
 
-def calculate_apy(ttt, at_risk=None, to_win=100.0) -> float:
+def calculate_apy(tau, at_risk=None, to_win=100.0) -> float:
     """
     When to_win=100.0, at_risk can be interpreted as price in cents per share.
     """
     profit = to_win / at_risk
-    rate = log(profit) / ttt
+    rate = log(profit) / tau
     return rate * 100
 
 def calculate_bollinger_bands(

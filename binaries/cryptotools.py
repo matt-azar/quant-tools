@@ -9,6 +9,7 @@ def cryptoprice(coin = "BTC") -> float:
         raise ValueError("Unsupported coin.")
     url = urls[coin]
     response = requests.get(url)
+    assert response.status_code == 200, f"Unable to connect to {url}"
     tgt = "font-semibold tabular-nums md:text-2xl\">$"
     idx = response.text.find(tgt) + len(tgt)
     assert idx != -1, "Unable to parse price."
