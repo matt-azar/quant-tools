@@ -11,6 +11,7 @@ def above(
     T: datetime = None, 
     tau: float = None, 
     r: float = risk_free_rate,
+    rho: float = -5.0,
     stochastic_sigma: callable = None,
 ) -> float:
     """
@@ -24,6 +25,7 @@ def above(
         T (datetime, optional): Time of maturity.
         tau (float, optional): Time to maturity in years.
         r (float): Risk-free rate.
+        rho (float): Sensitivity of volatility to price changes.
         stochastic_sigma (callable, optional): A function that takes (t, sigma, *args) and returns 
             the volatility for a given time t. If None, uses constant volatility.
 
@@ -34,10 +36,19 @@ def above(
     if T:
         tau = get_tau(T)
     assert tau > 0.0, "Time T has passed."
+
+    # NOTE: Added 1/29/2025. Experimental.
+    sigma1 = sigma * (1 + rho * (K - S0) / S0)
+    sigma1 -= (sigma1 - sigma) / 2
+    sigma = sigma1
+    
+    # NOTE: Added 1/28/2025. Experimental.
     if stochastic_sigma:
         sigma = stochastic_sigma(0, sigma)
+        
     d1 = (log(S0 / K) + (0.5 * sigma**2 + r) * tau) / (sigma * tau**0.5)
     d2 = d1 - sigma * tau**0.5
+    
     return norm.cdf(d2)
 
 def get_VoV() -> float:
